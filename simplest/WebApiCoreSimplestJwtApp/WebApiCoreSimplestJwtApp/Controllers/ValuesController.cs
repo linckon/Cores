@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApiCoreSimplestJwtApp.Controllers
@@ -10,9 +11,11 @@ namespace WebApiCoreSimplestJwtApp.Controllers
     public class ValuesController : Controller
     {
         // GET api/values
+        [Authorize]
         [HttpGet]
         public IEnumerable<string> Get()
         {
+            string name = User.Identity.Name;
             return new string[] { "value1", "value2" };
         }
 
