@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace WebApiCoreJwtAppWithDb.Controllers
 {
@@ -12,8 +13,7 @@ namespace WebApiCoreJwtAppWithDb.Controllers
         [HttpGet]
         public IEnumerable<string> Get()
         {
-            string name = User.Identity.Name;
-            return new string[] { "value1", "value2" };
+            return new string[] { User.Identity.Name };
         }
 
         // GET api/values/5

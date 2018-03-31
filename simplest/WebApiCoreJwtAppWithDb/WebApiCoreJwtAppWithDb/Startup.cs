@@ -1,9 +1,12 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using WebApiCoreJwtAppWithDb.Models;
 
 namespace WebApiCoreJwtAppWithDb
 {
@@ -19,6 +22,8 @@ namespace WebApiCoreJwtAppWithDb
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<SecurityDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
             // configure how to validate the jwt token 
             string bizbook365 = "http://bizbook365.com";
             var validationParameter = new TokenValidationParameters()
@@ -37,6 +42,18 @@ namespace WebApiCoreJwtAppWithDb
                 {
                     options.TokenValidationParameters = validationParameter;
                 });
+
+            IdentityBuilder builder = services.AddIdentityCore<ApplicationUser>(o =>
+            {
+                o.Password.RequireDigit = false;
+                o.Password.RequireLowercase = false;
+                o.Password.RequireUppercase = false;
+                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequiredLength = 6;
+            });
+
+            builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), builder.Services);
+            builder.AddEntityFrameworkStores<SecurityDbContext>().AddDefaultTokenProviders();
 
             services.AddMvc();
         }

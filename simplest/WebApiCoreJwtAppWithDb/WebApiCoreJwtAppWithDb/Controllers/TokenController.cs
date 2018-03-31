@@ -3,8 +3,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using WebApiCoreJwtAppWithDb.Models;
 
 namespace WebApiCoreJwtAppWithDb.Controllers
 {
@@ -26,6 +28,13 @@ namespace WebApiCoreJwtAppWithDb.Controllers
     [Route("api/Token")]
     public class TokenController : Controller
     {
+        private UserManager<ApplicationUser> userManager;
+
+        public TokenController(UserManager<ApplicationUser> userManager)
+        {
+            this.userManager = userManager;
+        }
+
         [AllowAnonymous]
         [HttpPost]
         public IActionResult CreateToken([FromBody]LoginModel login)
@@ -42,15 +51,14 @@ namespace WebApiCoreJwtAppWithDb.Controllers
             return response;
         }
 
-        private string BuildToken(UserModel user)
+        private string BuildToken(ApplicationUser user)
         {
             var claims = new[] {
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Name),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Birthdate, user.Birthdate.ToString("yyyy-MM-dd")),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
-
 
             string bizbook365 = "http://bizbook365.com";
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(bizbook365));
@@ -69,7 +77,7 @@ namespace WebApiCoreJwtAppWithDb.Controllers
         }
 
 
-        private UserModel Authenticate(LoginModel login)
+        private ApplicationUser Authenticate(LoginModel login)
         {
             UserModel user = null;
 
@@ -77,7 +85,23 @@ namespace WebApiCoreJwtAppWithDb.Controllers
             {
                 user = new UserModel { Name = "Mario Rossi", Email = "mario.rossi@domain.com" };
             }
-            return user;
+            //       var userToVerify = await _userManager.FindByNameAsync(userName);
+            //  await _userManager.CheckPasswordAsync(userToVerify, password)
+            // _jwtFactory.GenerateClaimsIdentity(userName, userToVerify.Id)
+            /*
+             *
+             *      string jwt = await Tokens.GenerateJwt(
+                     identity,
+                     _jwtFactory,
+                     loginViewModel.Username,
+                     _jwtOptions,
+                     new JsonSerializerSettings { Formatting = Formatting.Indented });
+             */
+            ApplicationUser applicationUser = userManager.FindByNameAsync(login.Username).GetAwaiter().GetResult();
+            bool result = userManager.CheckPasswordAsync(applicationUser, login.Password).GetAwaiter().GetResult();
+
+
+            return applicationUser;
         }        
     }
 }
