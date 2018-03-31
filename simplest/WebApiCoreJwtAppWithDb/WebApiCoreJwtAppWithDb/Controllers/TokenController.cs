@@ -79,29 +79,13 @@ namespace WebApiCoreJwtAppWithDb.Controllers
 
         private ApplicationUser Authenticate(LoginModel login)
         {
-            UserModel user = null;
-
-            if (login.Username == "mario" && login.Password == "secret")
-            {
-                user = new UserModel { Name = "Mario Rossi", Email = "mario.rossi@domain.com" };
-            }
-            //       var userToVerify = await _userManager.FindByNameAsync(userName);
-            //  await _userManager.CheckPasswordAsync(userToVerify, password)
-            // _jwtFactory.GenerateClaimsIdentity(userName, userToVerify.Id)
-            /*
-             *
-             *      string jwt = await Tokens.GenerateJwt(
-                     identity,
-                     _jwtFactory,
-                     loginViewModel.Username,
-                     _jwtOptions,
-                     new JsonSerializerSettings { Formatting = Formatting.Indented });
-             */
             ApplicationUser applicationUser = userManager.FindByNameAsync(login.Username).GetAwaiter().GetResult();
             bool result = userManager.CheckPasswordAsync(applicationUser, login.Password).GetAwaiter().GetResult();
+            if  (result){
+                return applicationUser;
+            }
 
-
-            return applicationUser;
+            return null;
         }        
     }
 }
